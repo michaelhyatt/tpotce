@@ -749,6 +749,12 @@ for name in $(cat $myTPOTCOMPOSE | grep -v '#' | grep image | cut -d'"' -f2 | un
 done
 }
 fuBANNER "Pull images"
+pushd .
+cd ../../docker/elk/elasticsearch/
+docker-compose build
+cd ../kibana/
+docker-compose build
+popd
 fuPULLIMAGES
 
 # Let's add the daily update check with a weekly clean interval

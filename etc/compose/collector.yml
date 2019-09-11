@@ -125,7 +125,7 @@ services:
     mem_limit: 4g
     ports:
      - "127.0.0.1:64298:9200"
-    image: "dtagdevsec/elasticsearch:1903"
+    image: "mhtpotce/elasticsearch:1903"
     volumes:
      - /data:/data
 
@@ -138,7 +138,7 @@ services:
         condition: service_healthy
     ports:
      - "127.0.0.1:64296:5601"
-    image: "dtagdevsec/kibana:1903"
+    image: "mhtpotce/kibana:1903"
 
 ## Logstash service
   logstash:
