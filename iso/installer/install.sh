@@ -155,20 +155,11 @@ mySSHPORT="
 Port 64295
 "
 myCRONJOBS="
-# Check if updated images are available and download them
-27 1 * * *      root    docker-compose -f /opt/tpot/etc/tpot.yml pull
-
-# Delete elasticsearch logstash indices older than 90 days
-27 4 * * *      root    curator --config /opt/tpot/etc/curator/curator.yml /opt/tpot/etc/curator/actions.yml
-
 # Uploaded binaries are not supposed to be downloaded
 */1 * * * *     root    mv --backup=numbered /data/dionaea/roots/ftp/* /data/dionaea/binaries/
 
 # Daily reboot
 27 3 * * *      root    systemctl stop tpot && docker stop \$(docker ps -aq) || docker rm \$(docker ps -aq) || reboot
-
-# Check for updated packages every sunday, upgrade and reboot
-27 16 * * 0     root    apt-fast autoclean -y && apt-fast autoremove -y && apt-fast update -y && apt-fast upgrade -y && sleep 10 && reboot
 "
 myROOTPROMPT='PS1="\[\033[38;5;8m\][\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;6m\]@\[$(tput sgr0)\]\[\033[38;5;4m\]\h\[$(tput sgr0)\]\[\033[38;5;6m\]:\[$(tput sgr0)\]\[\033[38;5;5m\]\w\[$(tput sgr0)\]\[\033[38;5;8m\]]\[$(tput sgr0)\]\[\033[38;5;1m\]\\$\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]"'
 myUSERPROMPT='PS1="\[\033[38;5;8m\][\[$(tput sgr0)\]\[\033[38;5;2m\]\u\[$(tput sgr0)\]\[\033[38;5;6m\]@\[$(tput sgr0)\]\[\033[38;5;4m\]\h\[$(tput sgr0)\]\[\033[38;5;6m\]:\[$(tput sgr0)\]\[\033[38;5;5m\]\w\[$(tput sgr0)\]\[\033[38;5;8m\]]\[$(tput sgr0)\]\[\033[38;5;2m\]\\$\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]"'
@@ -562,12 +553,6 @@ if [ "$myTPOT_DEPLOYMENT_TYPE" == "iso" ];
     printf "%s" "$myCONF_TPOT_USER:$myPASS1" | chpasswd
 fi
 
-if [ "$myTPOT_DEPLOYMENT_TYPE" == "auto" ];
-  then
-    myCONF_TPOT_USER="tsec"
-    printf "%s" "$myCONF_TPOT_USER:$myCONF_TPOT_PASS" | chpasswd
-fi
-
 # Let's ask for web user credentials if deployment type is iso or user
 # In case of auto, credentials are created from config values
 # Skip this step entirely if SENSOR flavor
@@ -723,29 +708,9 @@ echo "$mySSHPORT" | tee -a /etc/ssh/sshd_config
 # Do not allow root login for cockpit
 sed -i '2i\auth requisite pam_succeed_if.so uid >= 1000' /etc/pam.d/cockpit
 
-# Let's make sure only myCONF_TPOT_FLAVOR images will be downloaded and started
-case $myCONF_TPOT_FLAVOR in
-  STANDARD)
-    fuBANNER "STANDARD"
-    ln -s /opt/tpot/etc/compose/standard.yml $myTPOTCOMPOSE
-  ;;
-  SENSOR)
-    fuBANNER "SENSOR"
-    ln -s /opt/tpot/etc/compose/sensor.yml $myTPOTCOMPOSE
-  ;;
-  INDUSTRIAL)
-    fuBANNER "INDUSTRIAL"
-    ln -s /opt/tpot/etc/compose/industrial.yml $myTPOTCOMPOSE
-  ;;
-  COLLECTOR)
-    fuBANNER "COLLECTOR"
-    ln -s /opt/tpot/etc/compose/collector.yml $myTPOTCOMPOSE
-  ;;
-  NEXTGEN)
-    fuBANNER "NEXTGEN"
-    ln -s /opt/tpot/etc/compose/nextgen.yml $myTPOTCOMPOSE
-  ;;
-esac
+
+ln -s /opt/tpot/etc/compose/standalone.yml $myTPOTCOMPOSE
+
 
 # Let's load docker images
 function fuPULLIMAGES {
@@ -755,12 +720,6 @@ for name in $(cat $myTPOTCOMPOSE | grep -v '#' | grep image | cut -d'"' -f2 | un
 done
 }
 fuBANNER "Pull images"
-pushd .
-cd ../../docker/elk/elasticsearch/
-docker-compose build
-cd ../kibana/
-docker-compose build
-popd
 fuPULLIMAGES
 
 # Let's add the daily update check with a weekly clean interval
@@ -812,13 +771,12 @@ touch /data/nginx/log/error.log
 
 # Let's copy some files
 fuBANNER "Copy configs"
-tar xvfz /opt/tpot/etc/objects/elkbase.tgz -C /
 cp /opt/tpot/host/etc/systemd/* /etc/systemd/system/
 systemctl enable tpot
 
 # Let's take care of some files and permissions
 fuBANNER "Permissions"
-chmod 777 -R /data
+chmod 770 -R /data
 if [ "$myTPOT_DEPLOYMENT_TYPE" == "iso" ] || [ "$myTPOT_DEPLOYMENT_TYPE" == "auto" ];
   then
     usermod -a -G tpot tsec
