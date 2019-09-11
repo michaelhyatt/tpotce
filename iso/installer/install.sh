@@ -412,21 +412,13 @@ if [ "$myTPOT_DEPLOYMENT_TYPE" == "auto" ] && [ "$myTPOT_CONF_FILE" == "" ];
     echo "Aborting. No configuration file given."
     exit
 fi
+
 if [ -s "$myTPOT_CONF_FILE" ] && [ "$myTPOT_CONF_FILE" != "" ];
   then
     myTPOT_DEPLOYMENT_TYPE="auto"
-    if [ "$(head -n 1 $myTPOT_CONF_FILE | grep -c "# tpot")" == "1" ];
-      then
-        source "$myTPOT_CONF_FILE"
-      else
-	echo "Aborting. Config file \"$myTPOT_CONF_FILE\" not a T-Pot configuration file."
-        exit
-      fi
-  elif ! [ -s "$myTPOT_CONF_FILE" ] && [ "$myTPOT_CONF_FILE" != "" ];
-    then
-      echo "Aborting. Config file \"$myTPOT_CONF_FILE\" not found."
-      exit
+    source "$myTPOT_CONF_FILE"
 fi
+
 
 # Prepare running the installer
 echo "$myINFO" | head -n 3
@@ -669,12 +661,8 @@ echo "$myNETWORK_WLANEXAMPLE" | tee -a /etc/network/interfaces
 fuBANNER "SSH roaming off"
 echo "UseRoaming no" | tee -a /etc/ssh/ssh_config
 
-# Installing elasticdump, yq
-fuBANNER "Installing pkgs"
-npm install https://github.com/taskrabbit/elasticsearch-dump -g
 pip install --upgrade pip
 hash -r
-pip install elasticsearch-curator yq
 
 # Cloning T-Pot from GitHub
 fuBANNER "Cloning T-Pot"
