@@ -812,7 +812,7 @@ systemctl enable tpot
 
 # Let's take care of some files and permissions
 fuBANNER "Permissions"
-chmod 770 -R /data
+chmod 777 -R /data
 if [ "$myTPOT_DEPLOYMENT_TYPE" == "iso" ];
   then
     usermod -a -G tpot tsec
