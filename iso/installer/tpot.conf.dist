@@ -3,3 +3,4 @@
 myCONF_TPOT_FLAVOR='STANDARD'
 myCONF_WEB_USER='webuser'
 myCONF_WEB_PW='w3b$ecret'
+myCONF_TPOT_PASS='t$ecr3t'

@@ -562,6 +562,12 @@ if [ "$myTPOT_DEPLOYMENT_TYPE" == "iso" ];
     printf "%s" "$myCONF_TPOT_USER:$myPASS1" | chpasswd
 fi
 
+if [ "$myTPOT_DEPLOYMENT_TYPE" == "auto" ];
+  then
+    myCONF_TPOT_USER="tsec"
+    printf "%s" "$myCONF_TPOT_USER:$myCONF_TPOT_PASS" | chpasswd
+fi
+
 # Let's ask for web user credentials if deployment type is iso or user
 # In case of auto, credentials are created from config values
 # Skip this step entirely if SENSOR flavor
@@ -813,7 +819,7 @@ systemctl enable tpot
 # Let's take care of some files and permissions
 fuBANNER "Permissions"
 chmod 777 -R /data
-if [ "$myTPOT_DEPLOYMENT_TYPE" == "iso" ];
+if [ "$myTPOT_DEPLOYMENT_TYPE" == "iso" ] || [ "$myTPOT_DEPLOYMENT_TYPE" == "auto" ];
   then
     usermod -a -G tpot tsec
   else
