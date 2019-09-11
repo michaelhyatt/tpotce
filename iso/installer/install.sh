@@ -668,6 +668,9 @@ hash -r
 fuBANNER "Cloning T-Pot"
 git clone https://github.com/michaelhyatt/tpotce /opt/tpot
 
+# Update env file
+cat $myCONF_FILE >> /opt/tpot/etc/compose/elk_environment
+
 # Let's create the T-Pot user
 fuBANNER "Create user"
 addgroup --gid 2000 tpot
