@@ -687,7 +687,7 @@ pip install elasticsearch-curator yq
 
 # Cloning T-Pot from GitHub
 fuBANNER "Cloning T-Pot"
-git clone https://github.com/dtag-dev-sec/tpotce /opt/tpot
+git clone https://github.com/michaelhyatt/tpotce /opt/tpot
 
 # Let's create the T-Pot user
 fuBANNER "Create user"
